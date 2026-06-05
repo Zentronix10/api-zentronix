@@ -135,4 +135,34 @@ const createAuditMiddleware = (db, auditService) => {
       if (req.user?.role !== 'admin') {
         return res.status(403).json({
           success: false,
-          message:
+          message: 'Admin access required.'
+        });
+      }
+      next();
+    },
+
+    // Log authentication attempts
+    logAuthAttempt: async (req, res, next) => {
+      const originalSend = res.send;
+      
+      res.send = function(data) {
+        const success = res.statusCode === 200;
+        const responseData = typeof data === 'string' ? JSON.parse(data) : data;
+        
+        auditService.logLogin(
+          req.body.email,
+          req.ip,
+          req.get('User-Agent'),
+          success,
+          success ? null : responseData?.message
+        ).catch(console.error);
+        
+        originalSend.call(this, data);
+      };
+      
+      next();
+    }
+  };
+};
+
+module.exports = createAuditMiddleware;
