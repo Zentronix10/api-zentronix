@@ -6,22 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "dev:watch": "nodemon --watch . --ext js,json --exec node server.js",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "db:seed": "node scripts/seedDatabase.js",
-    "db:reset": "node scripts/resetDatabase.js",
-    "security:audit": "npm audit",
-    "security:fix": "npm audit fix",
-    "docker:build": "docker build -t zentronix-api .",
-    "docker:run": "docker run -p 3000:3000 --env-file .env zentronix-api",
-    "docs:generate": "jsdoc -c jsdoc.json",
-    "precommit": "npm run lint && npm run format:check"
+    "format": "prettier --write ."
   },
   "keywords": [
     "banking",
@@ -33,10 +20,8 @@
     "investments",
     "crypto",
     "multi-currency",
-    "payment-gateway",
     "zentronix",
-    "brazil",
-    "open-banking"
+    "brazil"
   ],
   "author": "Zentronix Bank",
   "license": "MIT",
@@ -44,16 +29,11 @@
     "type": "git",
     "url": "https://github.com/Zentronix10/api-zentronix"
   },
-  "bugs": {
-    "url": "https://github.com/Zentronix10/api-zentronix/issues"
-  },
-  "homepage": "https://github.com/Zentronix10/api-zentronix#readme",
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": "18.x",
+    "npm": "9.x"
   },
   "dependencies": {
-    "@forkzz/asaas": "^1.0.0",
     "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
@@ -78,66 +58,5 @@
     "nodemon": "^3.0.2",
     "prettier": "^3.1.0",
     "supertest": "^6.3.3"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/tests/"
-    ],
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ]
-  },
-  "eslintConfig": {
-    "env": {
-      "node": true,
-      "jest": true,
-      "es2021": true
-    },
-    "extends": [
-      "eslint:recommended",
-      "plugin:node/recommended",
-      "plugin:security/recommended",
-      "prettier"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2021,
-      "sourceType": "module"
-    },
-    "rules": {
-      "no-console": "warn",
-      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-      "node/exports-style": ["error", "module.exports"],
-      "security/detect-object-injection": "off"
-    }
-  },
-  "prettier": {
-    "semi": true,
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "printWidth": 100,
-    "bracketSpacing": true,
-    "arrowParens": "always",
-    "endOfLine": "lf"
-  },
-  "nodemonConfig": {
-    "watch": [
-      "server.js",
-      "*.js",
-      "!tests/",
-      "!node_modules/"
-    ],
-    "ext": "js,json",
-    "ignore": [
-      "tests/*",
-      "*.test.js",
-      "node_modules/"
-    ],
-    "delay": "1000",
-    "env": {
-      "NODE_ENV": "development"
-    }
   }
 }
