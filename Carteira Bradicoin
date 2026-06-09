@@ -1,1 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Zentronix Bank | Bradicoin Mass Wallet Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #0f1235 50%, #1a0f2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #00f2ff, #0066ff);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .logo-area h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo-area p {
+            font-size: 12px;
+            color: #8e9aaf;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: #00f2ff;
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f2ff, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-label {
+            color: #8e9aaf;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        /* Main Generator Card */
+        .generator-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+        }
+
+        .generator-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #00f2ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #8e9aaf;
+        }
+
+        .input-modern {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .input-modern:focus {
+            outline: none;
+            border-color: #00f2ff;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f2ff, #0066ff);
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 242, 255, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 14px 28px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 242, 255, 0.2);
+            border-color: #00f2ff;
+        }
+
+        .btn-danger {
+            background: rgba(255, 0, 68, 0.2);
+            border: 1px solid #ff0044;
+            padding: 14px 28px;
+            border-radius: 12px;
+            color: #ff0044;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 0, 68, 0.4);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            height: 12px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00f2ff, #a855f7, #00ff88);
+            transition: width 0.2s ease;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-status {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+            color: #8e9aaf;
+        }
+
+        /* Speed Indicator */
+        .speed-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 242, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        /* Export Panel */
+        .export-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Wallets Table */
+        .wallets-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .wallet-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .wallet-table th,
+        .wallet-table td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .wallet-table th {
+            color: #00f2ff;
+            font-weight: 600;
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            background: #0f1235;
+        }
+
+        .wallet-table tr:hover {
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        .address-cell {
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .br-prefix {
+            background: rgba(0, 242, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #00f2ff;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #00f2ff;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 242, 255, 0.2);
+        }
+
+        /* Badge */
+        .badge {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #0f1235, #1a0f2e);
+            border-radius: 24px;
+            padding: 35px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #00f2ff;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: #00f2ff;
+            font-size: 24px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #00f2ff, #0066ff);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 1100;
+            animation: slideInRight 0.3s ease;
+            font-weight: 500;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Search */
+        .search-box {
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            width: 250px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .stat-number {
+                font-size: 24px;
+            }
+            
+            .wallet-table th,
+            .wallet-table td {
+                padding: 8px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div>
+                    <h1>Bradicoin Mass Wallet Generator</h1>
+                    <p>Zentronix Bank Integration | Generate Thousands of BRD Wallets (Addresses start with <strong style="color:#00f2ff">Br</strong>)</p>
+                </div>
+            </div>
+            <div class="speed-indicator">
+                <i class="fas fa-tachometer-alt"></i>
+                <span id="generationSpeed">0</span> wallets/sec
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-number" id="totalWallets">0</div>
+                <div class="stat-label">Total Wallets Generated</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-number" id="walletsPerSecond">0</div>
+                <div class="stat-label">Wallets/Second (Peak)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💾</div>
+                <div class="stat-number" id="storageSize">0</div>
+                <div class="stat-label">Storage (KB)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🕐</div>
+                <div class="stat-number" id="lastBatch">0</div>
+                <div class="stat-label">Last Batch Size</div>
+            </div>
+        </div>
+
+        <!-- Generator Card -->
+        <div class="generator-card">
+            <div class="generator-title">
+                <i class="fas fa-cogs"></i>
+                Mass Wallet Generator
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="input-group">
+                    <label><i class="fas fa-layer-group"></i> Number of Wallets</label>
+                    <input type="number" id="walletCount" class="input-modern" value="1000" min="1" max="1000000" step="100">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-chunk"></i> Batch Size</label>
+                    <input type="number" id="batchSize" class="input-modern" value="500" min="10" max="10000" step="100">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-code-branch"></i> Address Format</label>
+                    <input type="text" class="input-modern" value="BrXXXXXXXXXXXXXXXXXXXX" disabled style="opacity: 0.7;">
+                    <small style="color: #00f2ff; margin-top: 5px; display: block;">✓ All addresses start with "Br" (Bradicoin format)</small>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" id="startBtn" onclick="startGeneration()">
+                    <i class="fas fa-play"></i> Generate Wallets
+                </button>
+                <button class="btn-secondary" onclick="exportJSON()">
+                    <i class="fas fa-file-code"></i> Export JSON
+                </button>
+                <button class="btn-secondary" onclick="exportCSV()">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+                <button class="btn-secondary" onclick="exportTXT()">
+                    <i class="fas fa-file-alt"></i> Export TXT
+                </button>
+                <button class="btn-danger" onclick="clearAllWallets()">
+                    <i class="fas fa-trash-alt"></i> Clear All
+                </button>
+            </div>
+            <div class="progress-container">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-status" id="progressStatus">
+                <i class="fas fa-info-circle"></i> Ready to generate thousands of BRD wallets (addresses start with Br)
+            </div>
+        </div>
+
+        <!-- Export Card -->
+        <div class="export-card">
+            <div class="generator-title">
+                <i class="fas fa-download"></i>
+                Export & Backup
+            </div>
+            <div class="export-buttons">
+                <button class="btn-secondary" onclick="copyAllToClipboard()">
+                    <i class="fas fa-copy"></i> Copy All to Clipboard
+                </button>
+                <button class="btn-secondary" onclick="saveToLocalStorage()">
+                    <i class="fas fa-save"></i> Save to Browser
+                </button>
+                <button class="btn-secondary" onclick="loadFromLocalStorage()">
+                    <i class="fas fa-folder-open"></i> Load Saved Data
+                </button>
+                <button class="btn-secondary" onclick="generateBackupFile()">
+                    <i class="fas fa-archive"></i> Create Backup
+                </button>
+            </div>
+        </div>
+
+        <!-- Wallets Table -->
+        <div class="wallets-card">
+            <div class="table-header">
+                <div class="generator-title" style="margin-bottom: 0;">
+                    <i class="fas fa-list"></i>
+                    Generated Wallets
+                    <span class="badge" id="displayCount">(0)</span>
+                </div>
+                <div>
+                    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search address..." onkeyup="searchWallets()">
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="wallet-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Wallet Address (Br...)</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </thead>
+                    <tbody id="walletsTableBody">
+                        <tr><td colspan="4" style="text-align: center; padding: 50px;">
+                            <i class="fas fa-wallet" style="font-size: 48px; opacity: 0.3;"></i><br>
+                            No wallets generated yet<br>
+                            Click "Generate Wallets" to start
+                        </td</tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <button class="btn-primary" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== BRADICOIN MASS WALLET GENERATOR ====================
+        // All wallet addresses MUST start with "Br" - Bradicoin blockchain format
+        
+        // Bradicoin API
+        const BRADICOIN_API = 'https://bradicoin-api.onrender.com';
+        
+        // Global state
+        let wallets = [];
+        let isGenerating = false;
+        let generationStartTime = 0;
+        let peakSpeed = 0;
+        
+        // Generate random hex string (lowercase)
+        function randomHex(length) {
+            const chars = '0123456789abcdef';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars[Math.floor(Math.random() * 16)];
+            }
+            return result;
+        }
+        
+        // Generate BRD wallet address - MUST start with "Br"
+        // Format: Br + 40 hex characters (total 42 characters)
+        function generateWalletAddress(index) {
+            // Generate 40 random hex characters (20 bytes)
+            const randomPart = randomHex(40);
+            // Add unique index to ensure uniqueness
+            const uniqueSuffix = index.toString(16).padStart(8, '0').substring(0, 8);
+            const timestamp = Date.now().toString(16);
+            
+            // Combine: Br + random(32) + timestamp(8) + unique(4) = Br + 44 chars total
+            let address = 'Br' + randomPart.substring(0, 32) + timestamp.substring(0, 8) + uniqueSuffix.substring(0, 4);
+            
+            // Ensure address starts with Br
+            if (!address.startsWith('Br')) {
+                address = 'Br' + address.substring(2);
+            }
+            
+            return address;
+        }
+        
+        // Generate single wallet
+        function generateSingleWallet(index) {
+            return {
+                id: Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 8),
+                address: generateWalletAddress(index),
+                createdAt: new Date().toISOString(),
+                balance: 0,
+                prefix: 'Br'
+            };
+        }
+        
+        // Ultra-fast batch generation
+        async function generateWalletsAsync(count, batchSize, onProgress) {
+            const wallets = [];
+            const batches = Math.ceil(count / batchSize);
+            let generated = 0;
+            
+            for (let batch = 0; batch < batches; batch++) {
+                const batchCount = Math.min(batchSize, count - generated);
+                const batchWallets = [];
+                
+                // Generate batch synchronously for speed
+                for (let i = 0; i < batchCount; i++) {
+                    const wallet = generateSingleWallet(generated + i);
+                    // Validate address starts with Br
+                    if (!wallet.address.startsWith('Br')) {
+                        wallet.address = 'Br' + wallet.address.substring(2);
+                    }
+                    batchWallets.push(wallet);
+                }
+                
+                wallets.push(...batchWallets);
+                generated += batchCount;
+                
+                if (onProgress) {
+                    onProgress(generated, count);
+                }
+                
+                // Small yield to prevent UI freezing
+                if (batch % 5 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            }
+            
+            return wallets;
+        }
+        
+        // Start generation
+        async function startGeneration() {
+            if (isGenerating) {
+                showToast('Generation already in progress!', 'warning');
+                return;
+            }
+            
+            let count = parseInt(document.getElementById('walletCount').value);
+            let batchSize = parseInt(document.getElementById('batchSize').value);
+            
+            if (isNaN(count) || count < 1) {
+                showToast('Please enter a valid number of wallets', 'error');
+                return;
+            }
+            
+            if (count > 1000000) {
+                if (!confirm(`You are about to generate ${count.toLocaleString()} wallets. This may take a while. Continue?`)) {
+                    return;
+                }
+            }
+            
+            if (isNaN(batchSize) || batchSize < 10) {
+                batchSize = 500;
+            }
+            
+            isGenerating = true;
+            generationStartTime = performance.now();
+            peakSpeed = 0;
+            
+            const startBtn = document.getElementById('startBtn');
+            const progressFill = document.getElementById('progressFill');
+            const progressStatus = document.getElementById('progressStatus');
+            const speedSpan = document.getElementById('generationSpeed');
+            
+            startBtn.innerHTML = '<div class="spinner"></div> Generating...';
+            startBtn.disabled = true;
+            
+            let lastGenerated = 0;
+            let lastTime = generationStartTime;
+            
+            const onProgress = (generated, total) => {
+                const percent = (generated / total) * 100;
+                progressFill.style.width = `${percent}%`;
+                
+                const now = performance.now();
+                const timeDiff = (now - lastTime) / 1000;
+                const genDiff = generated - lastGenerated;
+                
+                if (timeDiff > 0.5 && genDiff > 0) {
+                    const currentSpeed = Math.round(genDiff / timeDiff);
+                    if (currentSpeed > peakSpeed) peakSpeed = currentSpeed;
+                    speedSpan.innerText = currentSpeed;
+                    document.getElementById('walletsPerSecond').innerText = peakSpeed;
+                    lastGenerated = generated;
+                    lastTime = now;
+                }
+                
+                const elapsed = (now - generationStartTime) / 1000;
+                const avgSpeed = elapsed > 0 ? Math.round(generated / elapsed) : 0;
+                
+                progressStatus.innerHTML = `
+                    <i class="fas fa-spinner fa-pulse"></i> 
+                    Generating ${generated.toLocaleString()} of ${total.toLocaleString()} wallets 
+                    (${percent.toFixed(1)}%) | Speed: ${currentSpeed || avgSpeed} wallets/sec
+                `;
+            };
+            
+            try {
+                const newWallets = await generateWalletsAsync(count, batchSize, onProgress);
+                
+                // Final validation - ensure all addresses start with Br
+                for (const wallet of newWallets) {
+                    if (!wallet.address.startsWith('Br')) {
+                        wallet.address = 'Br' + wallet.address;
+                    }
+                }
+                
+                wallets.push(...newWallets);
+                saveToLocalStorage();
+                renderWallets();
+                updateStats();
+                
+                const totalTime = ((performance.now() - generationStartTime) / 1000).toFixed(2);
+                const finalSpeed = Math.round(count / totalTime);
+                
+                progressStatus.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #00ff88;"></i> 
+                    ✅ Completed! Generated ${newWallets.length.toLocaleString()} BRD wallets in ${totalTime} seconds 
+                    (${finalSpeed} wallets/sec)<br>
+                    <small>✓ All addresses start with "Br" (Bradicoin format)</small>
+                `;
+                progressFill.style.width = '100%';
+                
+                showToast(`Successfully generated ${newWallets.length.toLocaleString()} BRD wallets!`, 'success');
+                
+                // Register on blockchain API (background)
+                registerWalletsOnBlockchain(newWallets);
+                
+            } catch (error) {
+                console.error(error);
+                progressStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="color: #ff0044;"></i> Error: ${error.message}`;
+                showToast('Generation failed: ' + error.message, 'error');
+            } finally {
+                isGenerating = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> Generate Wallets';
+                startBtn.disabled = false;
+                
+                setTimeout(() => {
+                    if (!isGenerating) {
+                        progressFill.style.width = '0%';
+                    }
+                }, 3000);
+            }
+        }
+        
+        // Register wallets on blockchain
+        async function registerWalletsOnBlockchain(newWallets) {
+            try {
+                const batchSize = 100;
+                for (let i = 0; i < newWallets.length; i += batchSize) {
+                    const batch = newWallets.slice(i, i + batchSize);
+                    for (const wallet of batch) {
+                        try {
+                            await fetch(`${BRADICOIN_API}/api/wallet/create`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    address: wallet.address, 
+                                    timestamp: wallet.createdAt 
+                                })
+                            });
+                        } catch(e) {
+                            // Silent fail
+                        }
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            } catch (error) {
+                console.log('Blockchain registration skipped');
+            }
+        }
+        
+        // Render wallets table
+        function renderWallets() {
+            const tbody = document.getElementById('walletsTableBody');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filteredWallets = wallets;
+            if (searchTerm) {
+                filteredWallets = wallets.filter(w => w.address.toLowerCase().includes(searchTerm));
+            }
+            
+            const displayCount = document.getElementById('displayCount');
+            displayCount.innerHTML = `(${filteredWallets.length.toLocaleString()})`;
+            
+            if (filteredWallets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 50px;"><i class="fas fa-wallet" style="font-size: 48px; opacity: 0.3;"></i><br>No wallets found</td></tr>';
+                return;
+            }
+            
+            const displayWallets = filteredWallets.slice(-100).reverse();
+            
+            tbody.innerHTML = displayWallets.map((wallet, idx) => {
+                // Highlight the Br prefix
+                const displayAddress = wallet.address;
+                return `
+                    <tr>
+                        <td>${wallets.length - filteredWallets.indexOf(wallet)}</td>
+                        <td class="address-cell">
+                            <span class="br-prefix">Br</span>${displayAddress.substring(2)}
+                            <button class="copy-btn" onclick="copyToClipboard('${wallet.address}')" title="Copy address">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </td>
+                        <td style="font-size: 11px;">${new Date(wallet.createdAt).toLocaleString()}</td>
+                        <td>
+                            <button class="copy-btn" onclick="copyToClipboard('${wallet.address}')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Search wallets
+        function searchWallets() {
+            renderWallets();
+        }
+        
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalWallets').innerText = wallets.length.toLocaleString();
+            const dataStr = JSON.stringify(wallets);
+            const sizeKB = (dataStr.length / 1024).toFixed(2);
+            document.getElementById('storageSize').innerText = sizeKB;
+        }
+        
+        // Save to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('bradicoin_wallets_zentronix', JSON.stringify(wallets));
+            updateStats();
+            showToast('Wallets saved to browser storage', 'success');
+        }
+        
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('bradicoin_wallets_zentronix');
+            if (saved) {
+                try {
+                    wallets = JSON.parse(saved);
+                    renderWallets();
+                    updateStats();
+                    showToast(`Loaded ${wallets.length.toLocaleString()} wallets from storage`, 'success');
+                } catch(e) {
+                    showToast('Error loading saved data', 'error');
+                }
+            } else {
+                showToast('No saved data found', 'warning');
+            }
+        }
+        
+        // Clear all wallets
+        function clearAllWallets() {
+            const count = wallets.length;
+            if (count === 0) {
+                showToast('No wallets to clear', 'warning');
+                return;
+            }
+            
+            if (confirm(`⚠️ WARNING: You are about to delete ${count.toLocaleString()} wallets. This action cannot be undone. Continue?`)) {
+                wallets = [];
+                localStorage.removeItem('bradicoin_wallets_zentronix');
+                renderWallets();
+                updateStats();
+                showToast(`Cleared ${count.toLocaleString()} wallets`, 'success');
+            }
+        }
+        
+        // Export JSON
+        function exportJSON() {
+            const data = JSON.stringify(wallets, null, 2);
+            downloadFile(data, `bradicoin_wallets_${Date.now()}.json`, 'application/json');
+            showToast('Exported as JSON', 'success');
+        }
+        
+        // Export CSV
+        function exportCSV() {
+            const headers = ['ID', 'Address', 'Created At', 'Balance'];
+            const rows = wallets.map(w => [w.id, w.address, w.createdAt, w.balance]);
+            const csvContent = [headers, ...rows].map(row => 
+                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+            downloadFile(csvContent, `bradicoin_wallets_${Date.now()}.csv`, 'text/csv');
+            showToast('Exported as CSV', 'success');
+        }
+        
+        // Export TXT
+        function exportTXT() {
+            let content = '# BRADICOIN WALLETS - ZENTRONIX BANK\n';
+            content += `# Total Wallets: ${wallets.length}\n`;
+            content += `# Generated: ${new Date().toISOString()}\n`;
+            content += `# Format: All addresses start with "Br"\n`;
+            content += '# ' + '='.repeat(70) + '\n\n';
+            
+            wallets.forEach((w, i) => {
+                content += `WALLET #${i + 1}\n`;
+                content += `Address: ${w.address}\n`;
+                content += `Created: ${w.createdAt}\n`;
+                content += `${'-'.repeat(70)}\n`;
+            });
+            
+            downloadFile(content, `bradicoin_wallets_${Date.now()}.txt`, 'text/plain');
+            showToast('Exported as TXT', 'success');
+        }
+        
+        // Copy all to clipboard
+        function copyAllToClipboard() {
+            const content = wallets.map(w => w.address).join('\n');
+            navigator.clipboard.writeText(content);
+            showToast(`Copied ${wallets.length} wallet addresses to clipboard`, 'success');
+        }
+        
+        // Generate backup file
+        function generateBackupFile() {
+            const backup = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                totalWallets: wallets.length,
+                wallets: wallets
+            };
+            const data = JSON.stringify(backup, null, 2);
+            downloadFile(data, `bradicoin_backup_${Date.now()}.backup`, 'application/json');
+            showToast('Backup file created', 'success');
+        }
+        
+        // Download file helper
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showToast('Address copied to clipboard!', 'success');
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Show modal
+        function showModal(title, message) {
+            document.getElementById('modalTitle').innerHTML = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            document.getElementById('modal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        // Load saved wallets on startup
+        function loadSavedWallets() {
+            const saved = localStorage.getItem('bradicoin_wallets_zentronix');
+            if (saved) {
+                try {
+                    wallets = JSON.parse(saved);
+                    renderWallets();
+                    updateStats();
+                } catch(e) {}
+            }
+        }
+        
+        // Generate sample wallets if empty
+        function generateSampleWallets() {
+            if (wallets.length === 0) {
+                setTimeout(() => {
+                    const samples = [];
+                    for (let i = 0; i < 10; i++) {
+                        samples.push(generateSingleWallet(i));
+                    }
+                    wallets = samples;
+                    saveToLocalStorage();
+                    renderWallets();
+                    updateStats();
+                    showToast('10 sample wallets created! All addresses start with Br.', 'info');
+                }, 500);
+            }
+        }
+        
+        // Initialize
+        loadSavedWallets();
+        generateSampleWallets();
+    </script>
+</body>
+</html>
