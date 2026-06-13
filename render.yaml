@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: api-zentronix
+    runtime: node
+    repo: https://github.com/Zentronix10/api-zentronix
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
