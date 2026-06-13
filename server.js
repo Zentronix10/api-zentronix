@@ -23,11 +23,30 @@ const WalletGenerator = require('./wallet-generator');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database connection
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// Database connection com fallback para quando não há banco
+let pool = null;
+let dbAvailable = false;
+
+const initDatabase = () => {
+    if (!process.env.DATABASE_URL) {
+        console.warn('⚠️ DATABASE_URL not set. Running in demo mode (no database)');
+        return null;
+    }
+    
+    try {
+        const dbPool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+            max: 10,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 5000
+        });
+        return dbPool;
+    } catch (error) {
+        console.error('❌ Database initialization error:', error.message);
+        return null;
+    }
+};
 
 // ==================== MIDDLEWARE ====================
 
@@ -70,6 +89,10 @@ const authLimiter = rateLimit({
 // ==================== AUTHENTICATION MIDDLEWARE ====================
 
 const authenticateToken = async (req, res, next) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable. Please try again later.' });
+    }
+    
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -102,6 +125,10 @@ const authenticateToken = async (req, res, next) => {
 
 // Optional: Admin middleware
 const authenticateAdmin = async (req, res, next) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable.' });
+    }
+    
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -128,13 +155,19 @@ const authenticateAdmin = async (req, res, next) => {
 
 app.get('/health', async (req, res) => {
     const encryptionStatus = getEncryptionStatus();
-    let dbStatus = 'disconnected';
+    let dbStatus = 'not_configured';
     
-    try {
-        await pool.query('SELECT 1');
-        dbStatus = 'connected';
-    } catch (error) {
-        dbStatus = 'error';
+    if (pool && dbAvailable) {
+        try {
+            await pool.query('SELECT 1');
+            dbStatus = 'connected';
+        } catch (error) {
+            dbStatus = 'error';
+        }
+    } else if (!process.env.DATABASE_URL) {
+        dbStatus = 'not_configured';
+    } else {
+        dbStatus = 'disconnected';
     }
     
     res.json({
@@ -144,7 +177,23 @@ app.get('/health', async (req, res) => {
         version: '1.0.0',
         database: dbStatus,
         encryption: encryptionStatus,
-        supportedBlockchains: WalletGenerator.getSupportedBlockchains()
+        supportedBlockchains: WalletGenerator.getSupportedBlockchains(),
+        demoMode: !dbAvailable
+    });
+});
+
+// ==================== DEMO MODE ROUTES (quando não há banco) ====================
+
+// Rota simples para teste quando o banco não está configurado
+app.get('/api/demo/status', (req, res) => {
+    res.json({
+        mode: 'demo',
+        message: 'Zentronix Bank API is running in demo mode. Configure DATABASE_URL for full functionality.',
+        endpoints: [
+            'GET /health',
+            'GET /api/demo/status',
+            'GET /api/supported-chains'
+        ]
     });
 });
 
@@ -160,6 +209,13 @@ app.post('/api/auth/register', authLimiter, [
     body('fullName').notEmpty().trim(),
     body('country').optional().trim()
 ], async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ 
+            error: 'Database not configured. Please set DATABASE_URL environment variable.',
+            demoMessage: 'This is a demo response. Configure PostgreSQL to enable registration.'
+        });
+    }
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -217,7 +273,7 @@ app.post('/api/auth/register', authLimiter, [
         // Generate JWT token
         const token = jwt.sign(
             { userId: user.id, email: user.email },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'temporary-secret-change-this',
             { expiresIn: '24h' }
         );
         
@@ -248,6 +304,12 @@ app.post('/api/auth/login', authLimiter, [
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty()
 ], async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ 
+            error: 'Database not configured. Please set DATABASE_URL environment variable.'
+        });
+    }
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -294,7 +356,7 @@ app.post('/api/auth/login', authLimiter, [
         // Generate token
         const token = jwt.sign(
             { userId: user.id, email: user.email, role: user.role },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'temporary-secret-change-this',
             { expiresIn: '24h' }
         );
         
@@ -322,7 +384,6 @@ app.post('/api/auth/login', authLimiter, [
  * POST /api/auth/logout
  */
 app.post('/api/auth/logout', authenticateToken, async (req, res) => {
-    // In production, you might want to blacklist the token
     res.json({ success: true, message: 'Logged out successfully.' });
 });
 
@@ -335,6 +396,10 @@ app.post('/api/auth/logout', authenticateToken, async (req, res) => {
 app.post('/api/wallet/generate', authenticateToken, [
     body('blockchain').isIn(['BTC', 'ETH', 'SOL', 'LTC', 'BNB', 'USDT', 'MATIC'])
 ], async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable.' });
+    }
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -396,6 +461,10 @@ app.post('/api/wallet/generate', authenticateToken, [
  * GET /api/wallets
  */
 app.get('/api/wallets', authenticateToken, async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable.' });
+    }
+    
     const userId = req.userId;
     
     try {
@@ -422,6 +491,10 @@ app.get('/api/wallets', authenticateToken, async (req, res) => {
  * GET /api/wallet/:blockchain
  */
 app.get('/api/wallet/:blockchain', authenticateToken, async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable.' });
+    }
+    
     const { blockchain } = req.params;
     const userId = req.userId;
     
@@ -461,6 +534,19 @@ app.get('/api/wallet/:blockchain', authenticateToken, async (req, res) => {
  * GET /api/balances
  */
 app.get('/api/balances', authenticateToken, async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.json({
+            success: true,
+            demoMode: true,
+            balances: [
+                { blockchain: 'BTC', balance: 0, address: 'Demo mode - no wallet' },
+                { blockchain: 'ETH', balance: 0, address: 'Demo mode - no wallet' },
+                { blockchain: 'SOL', balance: 0, address: 'Demo mode - no wallet' },
+                { blockchain: 'USDT', balance: 0, address: 'Demo mode - no wallet' }
+            ]
+        });
+    }
+    
     const userId = req.userId;
     
     try {
@@ -495,6 +581,10 @@ app.post('/api/transaction/send', authenticateToken, [
     body('amount').isFloat({ min: 0.000001 }),
     body('note').optional().trim()
 ], async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable. Transactions require database.' });
+    }
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -522,7 +612,7 @@ app.post('/api/transaction/send', authenticateToken, [
         
         const wallet = walletResult.rows[0];
         
-        // Check balance (simplified - in production, query actual blockchain)
+        // Check balance
         const balanceResult = await pool.query(
             `SELECT balance FROM balances WHERE wallet_id = $1`,
             [wallet.id]
@@ -542,9 +632,6 @@ app.post('/api/transaction/send', authenticateToken, [
             [userId, wallet.id, amount, blockchain, toAddress, note || null]
         );
         
-        // In production: Here you would broadcast the transaction to the blockchain
-        // using the decrypted private key from wallet.encrypted_private_key
-        
         res.json({
             success: true,
             transactionId: txResult.rows[0].id,
@@ -563,6 +650,15 @@ app.post('/api/transaction/send', authenticateToken, [
  * GET /api/transactions
  */
 app.get('/api/transactions', authenticateToken, async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.json({
+            success: true,
+            demoMode: true,
+            transactions: [],
+            count: 0
+        });
+    }
+    
     const userId = req.userId;
     const { limit = 50, offset = 0, blockchain } = req.query;
     
@@ -604,6 +700,10 @@ app.get('/api/transactions', authenticateToken, async (req, res) => {
  * GET /api/user/profile
  */
 app.get('/api/user/profile', authenticateToken, async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable.' });
+    }
+    
     const userId = req.userId;
     
     try {
@@ -637,6 +737,10 @@ app.put('/api/user/profile', authenticateToken, [
     body('phone').optional().trim(),
     body('country').optional().trim()
 ], async (req, res) => {
+    if (!dbAvailable || !pool) {
+        return res.status(503).json({ error: 'Database unavailable.' });
+    }
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -733,27 +837,55 @@ app.use((err, req, res, next) => {
 // ==================== START SERVER ====================
 
 async function startServer() {
+    // Initialize database connection
+    pool = initDatabase();
+    dbAvailable = pool !== null;
+    
+    if (dbAvailable) {
+        try {
+            // Test database connection with timeout
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database connection timeout')), 5000)
+            );
+            await Promise.race([pool.query('SELECT 1'), timeoutPromise]);
+            console.log('✅ Database connected');
+        } catch (error) {
+            console.warn(`⚠️ Database connection failed: ${error.message}`);
+            console.warn('⚠️ Running in demo mode without database');
+            dbAvailable = false;
+            pool = null;
+        }
+    } else {
+        console.log('ℹ️ Running in demo mode. Set DATABASE_URL to enable full functionality.');
+    }
+    
+    // Test encryption (don't let it crash the server)
     try {
-        // Test database connection
-        await pool.query('SELECT 1');
-        console.log('✅ Database connected');
-        
-        // Test encryption
         const encryptionTest = testEncryption();
         if (!encryptionTest) {
             console.warn('⚠️ Encryption test failed. Check MASTER_ENCRYPTION_KEY');
         }
-        
-        app.listen(PORT, () => {
-            console.log(`🚀 Zentronix Bank API running on port ${PORT}`);
-            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`🔗 Supported blockchains: ${WalletGenerator.getSupportedBlockchains().map(b => b.code).join(', ')}`);
-        });
-        
     } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
+        console.warn('⚠️ Encryption module error:', error.message);
     }
+    
+    // CRITICAL FIX: Use '0.0.0.0' to bind to all network interfaces (required by Render)
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Zentronix Bank API running on port ${PORT}`);
+        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`💾 Database: ${dbAvailable ? 'Connected' : 'Demo Mode (no database)'}`);
+        console.log(`🔗 Supported blockchains: ${WalletGenerator.getSupportedBlockchains().map(b => b.code).join(', ')}`);
+        console.log(`📍 Health check: http://localhost:${PORT}/health`);
+    });
+    
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+        console.log('SIGTERM received, closing server...');
+        if (pool) {
+            await pool.end();
+        }
+        process.exit(0);
+    });
 }
 
 startServer();
